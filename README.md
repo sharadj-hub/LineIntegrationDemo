@@ -16,5 +16,5 @@ Get the Channel access token and Channel secret from the Channel Console.
 
 Tap the deploy button.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://gitlab.com/sharadj/lineintegrationdemo)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://gitlab.com/sharadj/lineintegrationdemo)
 
