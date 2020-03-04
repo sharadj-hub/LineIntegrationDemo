@@ -2,3 +2,4 @@ line:
   bot:
     channel-token : VLegefuh+y0/9fI8zOf0GCX4INMRoya1WRIngf+50Y5mjliYohmt/p9QlZjhNlcVGEsTwMHPZ/VFXl+1WTU3ltqaT4d2JiTd9QfTihFIcCRyn7MuvBze+hpe1kpEwpDFrSEK5F+S0SZqUmFHcXzhcAdB04t89/1O/w1cDnyilFU=
     channel-secret : 582ae12cdf7d576ab90dd60893c27d79
+    handler.path : /callback
