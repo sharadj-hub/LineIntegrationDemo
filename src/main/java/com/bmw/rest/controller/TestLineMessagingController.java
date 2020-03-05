@@ -6,31 +6,20 @@ package com.bmw.rest.controller;
 import static java.util.Collections.singletonList;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.bmw.rest.model.RestResponse;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
-import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.event.source.GroupSource;
-import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
@@ -48,29 +37,11 @@ public class TestLineMessagingController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
     
-    private final RestTemplate restTemplate =  new RestTemplate();
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
         TextMessageContent message = event.getMessage();
         handleTextContent(event.getReplyToken(), event, message);
-    }
-
-    
-    @EventMapping
-    public void handlePostbackEvent(PostbackEvent event) throws URISyntaxException {
-        String replyToken = event.getReplyToken();
-        
-        /** Calling free available REST service http://services.groupkt.com/country/get/iso2code/*/
-        URI url = new URI(
-        		"http://services.groupkt.com/country/get/iso2code/"+ event.getPostbackContent().getData());
-        
-        ResponseEntity<RestResponse> response =
-                restTemplate.exchange(url, HttpMethod.POST, null, 
-                        new ParameterizedTypeReference<RestResponse>(){});
-            
-        this.replyText(replyToken,
-                       "Got postback data " + response.toString());
     }
 
     @EventMapping
@@ -115,74 +86,59 @@ public class TestLineMessagingController {
 
         System.out.println("Got text message from replyToken:"+replyToken+" text:"+ text);
         switch (text) {
-            case "Sales": {
-                System.out.println("Invoking 'Sales' command: source:"+
-                         event.getSource());
-                final String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    if (event.getSource() instanceof GroupSource) {
-                        lineMessagingClient
-                                .getGroupMemberProfile(((GroupSource) event.getSource()).getGroupId(), userId)
-                                .whenComplete((profile, throwable) -> {
-                                    if (throwable != null) {
-                                        this.replyText(replyToken, throwable.getMessage());
-                                        return;
-                                    }
+            case "Test-Drive": {
 
-                                    this.reply(
-                                            replyToken,
-                                            Arrays.asList(new TextMessage("(from group)"),
-                                                          new TextMessage(
-                                                                  "Display name: " + profile.getDisplayName()),
-                                                          new ImageMessage(profile.getPictureUrl(),
-                                                                           profile.getPictureUrl()))
-                                    );
-                                });
-                    } else {
-                        lineMessagingClient
-                                .getProfile(userId)
-                                .whenComplete((profile, throwable) -> {
-                                    if (throwable != null) {
-                                        this.replyText(replyToken, throwable.getMessage());
-                                        return;
-                                    }
-
-                                    this.reply(
-                                            replyToken,
-                                            Arrays.asList(new TextMessage(
-                                                                  "Display name: " + profile.getDisplayName()),
-                                                          new TextMessage("Status message: "
-                                                                          + profile.getStatusMessage()))
-                                    );
-
-                                });
-                    }
-                } else {
-                    this.replyText(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
-            }
-            case "buttons": {
-                URI imageUrl = createUri("/static/buttons/1040.jpg");
+                URI imageUrl = createUri("/images/series.jpg");
                 ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
                         imageUrl,
-                        "My button sample",
-                        "Hello, my button",
+                        "BMW Series",
+                        "Please choose series",
                         Arrays.asList(
-                                new URIAction("Go to line.me",
-                                              URI.create("https://line.me"), null),
-                                new PostbackAction("Say hello1",
-                                                   "hello こんにちは"),
-                                new PostbackAction("言 hello2",
-                                                   "hello こんにちは",
-                                                   "hello こんにちは"),
-                                new MessageAction("Say message",
-                                                  "Rice=米")
+                                new MessageAction("3-Series",
+                                                   "3-Series"),
+                                new MessageAction("X-Series",
+                                                   "X-Series")
                         ));
                 TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
                 this.reply(replyToken, templateMessage);
                 break;
-            }default:
+            
+            }
+            case "3-Series": {
+                URI imageUrl1 = createUri("/images/models.jpg");
+                ButtonsTemplate buttonsTemplate1 = new ButtonsTemplate(
+                        imageUrl1,
+                        "BMW Model",
+                        "Please choose model",
+                        Arrays.asList(
+                                new MessageAction("325d",
+                                                   "325d"),
+                                new MessageAction("330d",
+                                                   "330d"),
+                                new MessageAction("335d",
+                                        			"335d")
+                        ));
+                TemplateMessage templateMessage1 = new TemplateMessage("Button2 alt text", buttonsTemplate1);
+                this.reply(replyToken, templateMessage1);
+                break;
+            
+            
+            }
+            case "325d": {
+            	System.out.println("Returns echo message {replyToken}:"+replyToken+",{text}:"+ text);
+                this.replyText(
+                        replyToken,
+                        "You are a registed user for test-drive of "+text+". Thanks!!");
+                break;
+            }
+            case "330d": {
+            	System.out.println("Returns echo message {replyToken}:"+replyToken+",{text}:"+ text);
+                this.replyText(
+                        replyToken,
+                        "Please register yourself with BMW. Thanks!!");
+                break;
+            }
+            default:
                 System.out.println("Returns echo message {replyToken}:"+replyToken+",{text}:"+ text);
                 this.replyText(
                         replyToken,
