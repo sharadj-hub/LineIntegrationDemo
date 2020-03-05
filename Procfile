@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar LineIntegrationDemo/target/lineintegrationdemo-*.jar --server.port=$PORT
+web: java $JAVA_OPTS -jar target/lineintegrationdemo-*.jar --server.port=$PORT
